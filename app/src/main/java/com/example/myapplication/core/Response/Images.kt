@@ -1,4 +1,4 @@
-package com.example.myapplication.core.Responce
+package com.example.myapplication.core.Response
 
 data class Images(
     val original: Original,

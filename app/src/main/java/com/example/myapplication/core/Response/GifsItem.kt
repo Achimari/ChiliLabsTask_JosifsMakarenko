@@ -1,4 +1,4 @@
-package com.example.myapplication.core.Responce
+package com.example.myapplication.core.Response
 
 data class GifsItem(
     val id: String,

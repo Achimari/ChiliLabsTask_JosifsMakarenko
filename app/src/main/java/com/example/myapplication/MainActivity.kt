@@ -10,8 +10,8 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.core.ApiService
-import com.example.myapplication.core.Responce.GifsItem
-import com.example.myapplication.core.Responce.GifsResponse
+import com.example.myapplication.core.Response.GifsItem
+import com.example.myapplication.core.Response.GifsResponse
 import com.example.myapplication.util.Constant
 import com.example.myapplication.util.GifsAdapter
 import retrofit2.Call

@@ -8,7 +8,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapplication.R
-import com.example.myapplication.core.Responce.GifsItem
+import com.example.myapplication.core.Response.GifsItem
 
 class GifsAdapter(
     private val gifs: MutableList<GifsItem>,

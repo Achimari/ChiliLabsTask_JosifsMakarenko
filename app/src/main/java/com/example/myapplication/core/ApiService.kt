@@ -1,7 +1,7 @@
 package com.example.myapplication.core
 
 
-import com.example.myapplication.core.Responce.GifsResponse
+import com.example.myapplication.core.Response.GifsResponse
 import com.example.myapplication.util.Constant
 import retrofit2.Call
 import retrofit2.http.GET
