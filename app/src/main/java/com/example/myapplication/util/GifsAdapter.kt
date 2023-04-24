@@ -1,7 +1,6 @@
 package com.example.myapplication.util
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,48 +9,79 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapplication.R
 import com.example.myapplication.core.Responce.GifsItem
-import java.util.Locale
 
-class GifsAdapter(val context: Context, val gifs: MutableList<GifsItem>) : RecyclerView.Adapter<GifsAdapter.ViewHolder>() {
+class GifsAdapter(
+    private val gifs: MutableList<GifsItem>,
+    val loadMore: () -> Unit
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
     private var allGifs: MutableList<GifsItem> = mutableListOf()
-    private var filteredGifs: MutableList<GifsItem> = mutableListOf()
+    private var isLoading = false
+
+    companion object {
+        private const val VIEW_TYPE_GIF = 0
+        private const val VIEW_TYPE_LOADING = 1
+    }
 
     init {
         allGifs.addAll(gifs)
     }
 
-    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-        val imageView = itemView.findViewById<ImageView>(R.id.ivGif)
+    open class GifViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val imageView: ImageView = itemView.findViewById(R.id.ivGif)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_layout,parent,false))
+    class LoadingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_GIF -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_layout, parent, false)
+                GifViewHolder(view)
+            }
+            VIEW_TYPE_LOADING -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.activity_main, parent, false)
+                LoadingViewHolder(view)
+            }
+            else -> throw IllegalArgumentException("Invalid view type")
+        }
     }
 
     override fun getItemCount(): Int {
-        return gifs.size
+        return if (isLoading) gifs.size + 1 else gifs.size
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val data = gifs[position]
-        Glide.with(context).load(data.images.original.url)
-            .into(holder.imageView)
+    override fun getItemViewType(position: Int): Int {
+        return if (position == gifs.size && isLoading) {
+            VIEW_TYPE_LOADING
+        } else {
+            VIEW_TYPE_GIF
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder) {
+            is GifViewHolder -> {
+                val data = gifs[position]
+                holder.imageView.apply {
+                    Glide.with(context)
+                        .load(data.images.original.url)
+                        .into(this)
+                }
+            }
+            is LoadingViewHolder -> {
+                loadMore()
+            }
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun filter(query: String) {
-        filteredGifs.clear()
-        if (query.isEmpty()) {
-            filteredGifs.addAll(allGifs)
-        } else {
-            val lowerCaseQuery = query.lowercase(Locale.getDefault())
-            for (gif in allGifs) {
-                if (gif.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)) {
-                    filteredGifs.add(gif)
-                }
-            }
-        }
+    fun showLoadingIndicator(isLoading: Boolean) {
+        this.isLoading = isLoading
         notifyDataSetChanged()
     }
-
 }
+
+

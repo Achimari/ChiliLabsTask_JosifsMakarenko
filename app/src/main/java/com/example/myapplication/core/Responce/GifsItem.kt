@@ -6,5 +6,4 @@ data class GifsItem(
     val title: String,
     val type: String,
     val url: String,
-
     )
