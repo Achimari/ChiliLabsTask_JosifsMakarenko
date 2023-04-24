@@ -15,21 +15,25 @@ import java.util.Locale
 class GifsAdapter(val context: Context, val gifs: MutableList<GifsItem>) : RecyclerView.Adapter<GifsAdapter.ViewHolder>() {
     private var allGifs: MutableList<GifsItem> = mutableListOf()
     private var filteredGifs: MutableList<GifsItem> = mutableListOf()
+
+    init {
+        allGifs.addAll(gifs)
+    }
+
     class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val imageView = itemView.findViewById<ImageView>(R.id.ivGif)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        allGifs.addAll(gifs)
         return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_layout,parent,false))
     }
 
     override fun getItemCount(): Int {
-        return filteredGifs.size
+        return gifs.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val data = filteredGifs[position]
+        val data = gifs[position]
         Glide.with(context).load(data.images.original.url)
             .into(holder.imageView)
     }

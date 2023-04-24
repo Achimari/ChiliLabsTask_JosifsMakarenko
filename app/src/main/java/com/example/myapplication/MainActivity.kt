@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, "onFailure: ${t.message}")
                     }
                 })
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
