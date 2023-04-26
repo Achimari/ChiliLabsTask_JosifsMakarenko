@@ -1,4 +1,4 @@
-package com.example.myapplication.util
+package com.example.myapplication.util.components
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -76,6 +76,16 @@ class GifsAdapter(
             }
         }
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateGifs(newGifs: List<GifsItem>) {
+        gifs.clear()
+        allGifs.clear()
+        gifs.addAll(newGifs)
+        allGifs.addAll(newGifs)
+        notifyDataSetChanged()
+    }
+
 
     @SuppressLint("NotifyDataSetChanged")
     fun showLoadingIndicator(isLoading: Boolean) {
