@@ -22,30 +22,28 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-const val TAG = "MainActivity"
+const val TAG = "GifsViewModel"
+
 class GifsViewModel(application: Application) : AndroidViewModel(application) {
+
     private val retroService: ApiService = Retrofit.Builder()
         .baseUrl(Constant.BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(ApiService::class.java)
 
-    private val tempGifs = mutableListOf<GifsItem>()
-    private val gifs: MutableLiveData<List<GifsItem>> = MutableLiveData()
     private var tempQuery = ""
+    private var limit = 10
+    private var offset = 0
 
-    fun getGifs(): LiveData<List<GifsItem>> {
-        return gifs
-    }
+    val gifs: MutableLiveData<List<GifsItem>> = MutableLiveData()
 
-    fun searchGifs(query: String, key : String, limit: Int, offset: Int, recyclerView: RecyclerView, progressBar: ProgressBar, adapter: GifsAdapter) {
+    fun searchGifs(query: String, key : String) {
         gifs.value = emptyList()
-        findFirstTen(query, key, limit, offset)
-        loadMore(recyclerView, progressBar, adapter)
-        Log.d("TAG", query);
+        findFirstTen(query, key)
     }
 
-    private fun findFirstTen(query: String, key: String, limit: Int, offset: Int) {
+    private fun findFirstTen(query: String, key: String) {
         tempQuery = query
         retroService.searchGifs(query, key, limit, offset).enqueue(object : Callback<GifsResponse> {
             override fun onResponse(call: Call<GifsResponse>, response: Response<GifsResponse>) {
@@ -53,9 +51,7 @@ class GifsViewModel(application: Application) : AndroidViewModel(application) {
                 if (body == null) {
                     Log.d(TAG, "onResponse: No response")
                 } else {
-                    tempGifs.clear()
-                    tempGifs.addAll(body.data)
-                    gifs.value = tempGifs
+                    gifs.value = body.data
                 }
             }
 
@@ -65,52 +61,26 @@ class GifsViewModel(application: Application) : AndroidViewModel(application) {
         })
     }
 
-    private fun loadMore(
-        recyclerView: RecyclerView, progressBar: ProgressBar, adapter: GifsAdapter) {
-        val VISIBLE_THRESHOLD = 3
-        var isLoading = false
-
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                val layoutManager = recyclerView.layoutManager as GridLayoutManager
-                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
-                val totalItemCount = layoutManager.itemCount
-                if (!isLoading && totalItemCount <= (lastVisibleItemPosition + VISIBLE_THRESHOLD)) {
-                    isLoading = true
-                    progressBar.visibility = View.VISIBLE
-                    adapter.showLoadingIndicator(true)
-                    retroService.searchGifs(tempQuery, limit = 10, offset = totalItemCount)
-                        .enqueue(object : Callback<GifsResponse> {
-                            @SuppressLint("NotifyDataSetChanged")
-                            override fun onResponse(
-                                call: Call<GifsResponse>,
-                                response: Response<GifsResponse>
-                            ) {
-                                val body = response.body()
-                                if (body == null) {
-                                    Log.d(TAG, "onResponse: No response")
-                                } else {
-                                    Log.d("TAG", tempQuery);
-                                    tempGifs.addAll(body.data)
-                                    gifs.value = tempGifs
-                                    adapter.notifyDataSetChanged()
-                                }
-                                progressBar.visibility = View.GONE
-                                isLoading = false
-                                adapter.showLoadingIndicator(false)
-                            }
-
-                            override fun onFailure(call: Call<GifsResponse>, t: Throwable) {
-                                progressBar.visibility = View.GONE
-                                Log.d(TAG, "onFailure: ${t.message}")
-                                isLoading = false
-                                adapter.showLoadingIndicator(false)
-                            }
-                        })
+    fun loadMore() {
+        offset += limit
+        retroService.searchGifs(tempQuery, Constant.KEY, limit, offset)
+            .enqueue(object : Callback<GifsResponse> {
+                override fun onResponse(call: Call<GifsResponse>, response: Response<GifsResponse>) {
+                    val body = response.body()
+                    if (body == null) {
+                        Log.d(TAG, "onResponse: No response")
+                    } else {
+                        val currentList = gifs.value.orEmpty().toMutableList()
+                        currentList.addAll(body.data)
+                        gifs.value = currentList
+                    }
                 }
-            }
-        })
+
+                override fun onFailure(call: Call<GifsResponse>, t: Throwable) {
+                    Log.d(TAG, "onFailure: ${t.message}")
+                }
+            })
     }
 }
+
 

@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                viewModel.searchGifs(query, Constant.KEY, limit = 10, offset = adapter.itemCount, recyclerView, progressBar, adapter)
+                viewModel.searchGifs(query, Constant.KEY)
                 adapter.updateGifs(emptyList())
                 searchView.clearFocus()
                 return true
@@ -50,8 +50,29 @@ class MainActivity : AppCompatActivity() {
         })
         searchView.setQuery("", false)
 
-        viewModel.getGifs().observe(this) { gifs ->
+        var isLoading = false
+        val VISIBLE_THRESHOLD = 3
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                val totalItemCount = layoutManager.itemCount
+                if (!isLoading && totalItemCount <= (lastVisibleItemPosition + VISIBLE_THRESHOLD)) {
+                    isLoading = true
+                    progressBar.visibility = View.VISIBLE
+                    adapter.showLoadingIndicator(true)
+                    viewModel.loadMore()
+                }
+            }
+        })
+
+        viewModel.gifs.observe(this) { gifs ->
             adapter.updateGifs(gifs)
+            progressBar.visibility = View.GONE
+            isLoading = false
+            adapter.showLoadingIndicator(false)
         }
     }
 }
