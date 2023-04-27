@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         searchView.setQuery("", false)
 
         var isLoading = false
-        val VISIBLE_THRESHOLD = 3
+        val visibleThreshold = 3
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                 val layoutManager = recyclerView.layoutManager as GridLayoutManager
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
                 val totalItemCount = layoutManager.itemCount
-                if (!isLoading && totalItemCount <= (lastVisibleItemPosition + VISIBLE_THRESHOLD)) {
+                if (!isLoading && totalItemCount <= (lastVisibleItemPosition + visibleThreshold)) {
                     isLoading = true
                     progressBar.visibility = View.VISIBLE
                     adapter.showLoadingIndicator(true)
